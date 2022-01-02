@@ -4,22 +4,21 @@ import logo from './logo.svg';
 import './App.css';
 import 'firebase/functions';
 import { loadStripe } from '@stripe/stripe-js';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, getFirestore } from "firebase/firestore";
+import "firebase/compat/auth";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
+import 'firebase/compat/functions';
 var auth = null;
 var user = null;
-var db = null;
 
+var db = null;
 
 
 class App extends Component {
 
 
   login = () => {
-    auth = getAuth();
-    signInWithEmailAndPassword(auth, "email@example.com", "password")
+    auth = firebase.auth().signInAnonymously()
       .then((userCredential) => {
         // Signed in 
         user = userCredential.user;
@@ -35,44 +34,53 @@ class App extends Component {
     console.log("ciao");
   }
   goToCheckout = () => {
-   
-    console.log(db);
-
     firebase.default
-    .firestore()
-    .collection('customers')
-    .doc(user.uid)
-    .collection('checkout_sessions')
-    .add({
-      price: '', // todo price Id from your products price in the Stripe Dashboard
-      success_url: window.location.origin, // return user to this screen on successful purchase
-      cancel_url: window.location.origin // return user to this screen on failed purchase
-    })
-    .then((docRef) => {
-      // Wait for the checkoutSession to get attached by the extension
-      docRef.onSnapshot(async (snap) => {
-        const { error, sessionId } = snap.data();
-        if (error) {
-          // Show an error to your customer and inspect
-          // your Cloud Function logs in the Firebase console.
-          alert(`An error occurred: ${error.message}`);
-        }
+      .firestore()
+      .collection('customers')
+      .doc(user.uid)
+      .collection('checkout_sessions')
+      .add({
+        price: 'price_1JTrBwCteg4IFPA3ZXanNvnY', // todo price Id from your products price in the Stripe Dashboard
+        tax_rates: ['txr_1KCJpxCteg4IFPA3J0AeiB6u'],
+        success_url: window.location.origin, // return user to this screen on successful purchase
+        cancel_url: window.location.origin, // return user to this screen on failed purchase
+        billing_address_collection: "required"
+      })
+      .then((docRef) => {
+        // Wait for the checkoutSession to get attached by the extension
+        docRef.onSnapshot(async (snap) => {
+          const { error, sessionId } = snap.data();
+          if (error) {
+            // Show an error to your customer and inspect
+            // your Cloud Function logs in the Firebase console.
+            alert(`An error occurred: ${error.message}`);
+          }
 
-        if (sessionId) {
-          // We have a session, let's redirect to Checkout
-          // Init Stripe
-          const stripe = await loadStripe(
-            'pk_test_51JPvIuCteg4IFPA3FLES9iu76s9HCWf2mTIRTdNcpZqk6PKwYe718GUJCzOs1h7SW2JsB5FUTNpJ4Uznf7rXxLhg00D3BqLaSX' // todo enter your public stripe key here
-          );
-          console.log(`redirecting`);
-          await stripe.redirectToCheckout({ sessionId });
-        }
+          if (sessionId) {
+            // We have a session, let's redirect to Checkout
+            // Init Stripe
+            const stripe = await loadStripe(
+              'pk_test_51JPvIuCteg4IFPA3FLES9iu76s9HCWf2mTIRTdNcpZqk6PKwYe718GUJCzOs1h7SW2JsB5FUTNpJ4Uznf7rXxLhg00D3BqLaSX' // todo enter your public stripe key here
+            );
+            console.log(`redirecting`);
+            await stripe.redirectToCheckout({ sessionId });
+          }
+        });
       });
-    });
+  }
+
+  async sendToCustomerPortal() {
+    // had to update firebase.app().functions() to firebase.default.functions() and
+    // removed the region from the functions call (from stripe firebase extension docs)
+    const functionRef = firebase.default
+      .functions()
+      .httpsCallable('ext-firestore-stripe-payments-createPortalLink');
+    const { data } = await functionRef({ returnUrl: window.location.origin });
+    window.location.assign(data.url);
   }
 
   componentDidMount() {
-    db = firebase.firestore();
+    var db = firebase.firestore();
     this.login();
   }
 
@@ -95,6 +103,7 @@ class App extends Component {
         </header>
 
         <button onClick={() => this.goToCheckout()}>Abbonati</button>
+        <button onClick={() => this.sendToCustomerPortal()}>Gestisci abbonamento</button>
       </div>
     );
   }

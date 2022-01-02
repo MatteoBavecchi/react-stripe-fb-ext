@@ -1,17 +1,19 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { initializeApp } from 'firebase/app';
+import firebase from 'firebase/compat/app';
 
-const app = initializeApp({
-  apiKey: "AIzaSyBE7JMBahNx-3DmBzJLDVd9xIO3msRjwrc",
-  authDomain: "auth-test-99d38.firebaseapp.com",
-  projectId: "auth-test-99d38",
-  storageBucket: "auth-test-99d38.appspot.com",
-  messagingSenderId: "785844393732",
-  appId: "1:785844393732:web:8c3ecbb1573aa93b30a251"
+const app = firebase.initializeApp({
+  apiKey: "AIzaSyA_30OZ08ZPCDwCu_gwHSnmYuNkb6GRPpc",
+  authDomain: "civil-willow-211119.firebaseapp.com",
+  databaseURL: "https://civil-willow-211119.firebaseio.com",
+  projectId: "civil-willow-211119",
+  storageBucket: "civil-willow-211119.appspot.com",
+  messagingSenderId: "709281914321",
+  appId: "1:709281914321:web:b03f54f94d991b0e9ad4f0",
+  measurementId: "G-JTQQMVGPL6"
 });
 
 
