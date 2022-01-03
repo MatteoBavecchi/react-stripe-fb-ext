@@ -37,8 +37,8 @@ class App extends Component {
       .add({
         price: 'price_1JTrBwCteg4IFPA3ZXanNvnY', 
         tax_rates: ['txr_1KCJpxCteg4IFPA3J0AeiB6u'],
-        success_url: 'signup-5',
-        cancel_url: '/',
+        success_url: window.location.origin,
+        cancel_url: window.location.origin,
         billing_address_collection: "required",
         tax_id_collection: {
           enabled: true,
