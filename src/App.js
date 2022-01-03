@@ -2,17 +2,12 @@ import ReactDOM from 'react-dom';
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import 'firebase/functions';
-import { loadStripe } from '@stripe/stripe-js';
 import "firebase/compat/auth";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import 'firebase/compat/functions';
 var auth = null;
 var user = null;
-
-var db = null;
-
 
 class App extends Component {
 
@@ -40,28 +35,24 @@ class App extends Component {
       .doc(user.uid)
       .collection('checkout_sessions')
       .add({
-        price: 'price_1JTrBwCteg4IFPA3ZXanNvnY', // todo price Id from your products price in the Stripe Dashboard
+        price: 'price_1JTrBwCteg4IFPA3ZXanNvnY', 
         tax_rates: ['txr_1KCJpxCteg4IFPA3J0AeiB6u'],
-        success_url: window.location.origin, // return user to this screen on successful purchase
-        cancel_url: window.location.origin, // return user to this screen on failed purchase
+        success_url: 'signup-5',
+        cancel_url: '/',
         billing_address_collection: "required",
         tax_id_collection: {
           enabled: true,
         },
       })
       .then((docRef) => {
-        // Wait for the checkoutSession to get attached by the extension
         docRef.onSnapshot(async (snap) => {
           const { error, url } = snap.data();
           if (error) {
-            // Show an error to your customer and inspect
-            // your Cloud Function logs in the Firebase console.
             alert(`An error occurred: ${error.message}`);
           }
 
-          if (url) {/*
-            // We have a session, let's redirect to Checkout
-            // Init Stripe
+          if (url) {
+            /*
             const stripe = await loadStripe(
               'pk_test_51JPvIuCteg4IFPA3FLES9iu76s9HCWf2mTIRTdNcpZqk6PKwYe718GUJCzOs1h7SW2JsB5FUTNpJ4Uznf7rXxLhg00D3BqLaSX' // todo enter your public stripe key here
             );
@@ -75,8 +66,6 @@ class App extends Component {
   }
 
   async sendToCustomerPortal() {
-    // had to update firebase.app().functions() to firebase.default.functions() and
-    // removed the region from the functions call (from stripe firebase extension docs)
     const functionRef = firebase.default
       .functions()
       .httpsCallable('ext-firestore-stripe-payments-createPortalLink');
@@ -85,7 +74,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-    var db = firebase.firestore();
     this.login();
   }
 
