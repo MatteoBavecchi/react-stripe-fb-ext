@@ -44,19 +44,22 @@ class App extends Component {
         tax_rates: ['txr_1KCJpxCteg4IFPA3J0AeiB6u'],
         success_url: window.location.origin, // return user to this screen on successful purchase
         cancel_url: window.location.origin, // return user to this screen on failed purchase
-        billing_address_collection: "required"
+        billing_address_collection: "required",
+        tax_id_collection: {
+          enabled: true,
+        },
       })
       .then((docRef) => {
         // Wait for the checkoutSession to get attached by the extension
         docRef.onSnapshot(async (snap) => {
-          const { error, sessionId } = snap.data();
+          const { error, url } = snap.data();
           if (error) {
             // Show an error to your customer and inspect
             // your Cloud Function logs in the Firebase console.
             alert(`An error occurred: ${error.message}`);
           }
 
-          if (sessionId) {
+          if (url) {/*
             // We have a session, let's redirect to Checkout
             // Init Stripe
             const stripe = await loadStripe(
@@ -64,6 +67,8 @@ class App extends Component {
             );
             console.log(`redirecting`);
             await stripe.redirectToCheckout({ sessionId });
+            */
+            window.location.assign(url);
           }
         });
       });
